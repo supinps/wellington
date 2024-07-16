@@ -1,0 +1,16 @@
+certifi==2024.7.4
+chardet==4.0.0
+customtkinter==5.2.2
+darkdetect==0.8.0
+idna==2.10
+Jinja2==3.0.1
+MarkupSafe==2.1.5
+msgpack==1.0.8
+packaging==24.1
+Pillow==8.4.0
+python-can==4.4.2
+requests==2.25.1
+tk==0.1.0
+typing_extensions==4.12.2
+urllib3==1.26.19
+wrapt==1.16.0
