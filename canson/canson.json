@@ -1,0 +1,31 @@
+[
+    {
+        "name": "temperature",
+        "id": 100,
+        "type": "int"
+    },
+    {
+        "name": "humidity",
+        "id": 101,
+        "type": "enum",
+        "categories": {
+            "0": "good",
+            "1": "bad",
+            "2": "average"
+        }
+    },
+    {
+        "name": "wind",
+        "id": 102,
+        "type": "intlist"
+    },
+    {
+        "name": "rain",
+        "id": 103,
+        "type": "enum",
+        "categories": {
+            "0": "yes",
+            "1": "no"
+        }
+    }
+]
