@@ -1,5 +1,7 @@
 import json
 
+__all__ = ["CANson"]
+
 
 class CANson:
     def __init__(self, config_file="canson.json") -> None:
