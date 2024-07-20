@@ -1,12 +1,13 @@
 [
     {
         "name": "temperature",
-        "id": 100,
-        "type": "int"
+        "id": "100",
+        "type": "int",
+        "extended": true
     },
     {
         "name": "humidity",
-        "id": 101,
+        "id": "0x101",
         "type": "enum",
         "categories": {
             "0": "good",
@@ -16,12 +17,12 @@
     },
     {
         "name": "wind",
-        "id": 102,
+        "id": "0x102",
         "type": "intlist"
     },
     {
         "name": "rain",
-        "id": 103,
+        "id": "103",
         "type": "enum",
         "categories": {
             "0": "yes",
