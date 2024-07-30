@@ -2,6 +2,7 @@ import time
 import can
 import threading
 from .canson import CANson
+from PySide6.QtCore import QThread, Signal
 
 __all__ = ["CANFilter"]
 
@@ -14,20 +15,28 @@ filters = [
 ]
 
 
-class CANFilter:
-    def __init__(self, channel="vcan0", interface="socketcan", filters=None) -> None:
+class CANFilter(QThread):
+    def __init__(
+        self, canson: CANson, channel="vcan0", interface="socketcan", filters=None
+    ) -> None:
+        self.canson = canson
         self.channel = channel
         self.interface = interface
         self.bus = can.Bus(channel, interface)
         self.filters = filters
         self.filters_changed = False
-        self.timeout = 1
+        self.timeout = 0.5
         self.__gui_list = []
         self.max_num_entry = 10
         self._key_lock = threading.Lock()
+        self._key_lock2 = threading.Lock()
+        self.set_filters()
 
-    def set_filters(self, filters):
-        self.bus.set_filters(filters)
+    def set_filters(self, filters=None):
+        if filters == None:
+            filters = self.canson.get_filters()
+        with self._key_lock2:
+            self.bus.set_filters(filters)
 
     def get_gui_list(self):
         with self._key_lock:
@@ -46,16 +55,18 @@ class CANFilter:
             gui_list.append([name, data])
         self.set_gui_list(gui_list)
 
-    def recv(self, canson: CANson):
+    def run(self):
         while True:
+            self._key_lock2.acquire()
             msg = self.bus.recv(timeout=self.timeout)
+            self._key_lock2.release()
             if msg != None:
                 # print(msg.arbitration_id)
                 # print(msg.data)
                 # print(msg)
-                frame = canson.get_frame(msg.arbitration_id)
-                name = canson.get_frame_name(frame)
-                data = canson.get_frame_data(frame, msg.data)
+                frame = self.canson.get_frame(msg.arbitration_id)
+                name = self.canson.get_frame_name(frame)
+                data = self.canson.get_frame_data(frame, msg.data)
                 self.__append_gui_list(name, data)
 
 

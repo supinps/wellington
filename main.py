@@ -7,12 +7,12 @@ from canson.canFilter import CANFilter
 interface = "socketcan"
 channel = "vcan0"
 lock = threading.Lock()
+canson = CANson()
+can_filter = CANFilter(canson, channel=channel, interface=interface)
 
-can_filter = CANFilter(channel=channel, interface=interface)
 
-can_json = CANson()
-all_filters = can_json.get_filters()
-can_filter.set_filters(all_filters)
+all_filters = canson.get_filters()
+# can_filter.set_filters(all_filters)
 
 
 def new_filters(all_filters, index_list):
@@ -25,12 +25,12 @@ def new_filters(all_filters, index_list):
 def gui(can_filter: CANFilter):
     # gui_list = can_filter.get_gui_list()
     # print(f"{gui_list=}")
-    # time.sleep(10)
-    # gui_list = can_filter.get_gui_list()
-    # print(f"{gui_list=}")
-    # index_list = [0, 2]
-    # can_filter.set_filters(new_filters(all_filters, index_list))
-    # print("filters changed")
+    time.sleep(5)
+    gui_list = can_filter.get_gui_list()
+    print(f"{gui_list=}")
+    index_list = [0, 2]
+    can_filter.set_filters(new_filters(all_filters, index_list))
+    print("filters changed")
     # time.sleep(10)
     # gui_list = can_filter.get_gui_list()
     # print(f"{gui_list=}")
@@ -43,7 +43,7 @@ def gui(can_filter: CANFilter):
         print(f"{gui_list=}")
 
 
-can_thread = threading.Thread(target=can_filter.recv, args=[can_json])
+can_thread = threading.Thread(target=can_filter.recv)
 gui_thread = threading.Thread(target=gui, args=[can_filter])
 
 can_thread.start()
