@@ -16,9 +16,11 @@ filters = [
 
 
 class CANFilter(QThread):
+    newData = Signal(str, str)
     def __init__(
         self, canson: CANson, channel="vcan0", interface="socketcan", filters=None
     ) -> None:
+        super().__init__()
         self.canson = canson
         self.channel = channel
         self.interface = interface
@@ -67,6 +69,7 @@ class CANFilter(QThread):
                 frame = self.canson.get_frame(msg.arbitration_id)
                 name = self.canson.get_frame_name(frame)
                 data = self.canson.get_frame_data(frame, msg.data)
+                self.newData.emit(name, data)
                 self.__append_gui_list(name, data)
 
 

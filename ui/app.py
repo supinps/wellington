@@ -4,6 +4,8 @@ from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QAbstractTableModel, Qt, QModelIndex
 from qt_material import apply_stylesheet
 
+__all__ = ["UI"]
+
 class ListModel(QAbstractTableModel):
     def __init__(self, data=None):
         super(ListModel, self).__init__()        
@@ -30,53 +32,34 @@ class ListModel(QAbstractTableModel):
             column = index.column()
             return self._data[row][column]
 
-    def appendData(self, value1, value2):
+    def appendData(self, value1: str, value2: str) -> None:
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
         self._data.append([value1, value2])
         self.endInsertRows()
 
+class UI:
+        def __init__(self):
+            self.loader = QUiLoader()
+            self.app = QtWidgets.QApplication(sys.argv)
+            apply_stylesheet(self.app, theme='light_blue.xml')
+            self.window: QtWidgets.QMainWindow = self.loader.load("ui/app.ui", None)
+            self.clearButton: QtWidgets.QPushButton = self.window.findChild(QtWidgets.QPushButton, "clearButton")
+            self.saveButton: QtWidgets.QPushButton = self.window.findChild(QtWidgets.QPushButton, "saveButton")
+            self.frameDataTableView: QtWidgets.QTableView = self.window.findChild(QtWidgets.QTableView, "frameDataTableView")
+            self.frameDataTableView.setColumnWidth(50,250)
+            self.model = ListModel([["0x502", "Item 1b"], ["0x503", "Item 2b"], ["0x502", "Item 3b"]])
+            self.frameDataTableView.setModel(self.model)
+            self.statusBar: QtWidgets.QStatusBar = self.window.findChild(QtWidgets.QStatusBar, "statusbar")
+            self.statusBar.showMessage("waiting for CAN device...")
 
-loader = QUiLoader()
-app = QtWidgets.QApplication(sys.argv)
-apply_stylesheet(app, theme='light_blue.xml')
+        def start(self):
+            self.window.show()
+            self.app.exec()
+        
+        def add_new_frame(self, frameID: str, frameData: str) -> None:
+            self.model.appendData(frameID, frameData)
 
-window: QtWidgets.QMainWindow = loader.load("ui/app.ui", None)
-# combo_style: str = """
-#                             QComboBox {
-#                                 border: 0px solid white;
-#                                 color: black;
-#                                 padding: 10px 0px 0px 50px;
-#                             }
-#                             QComboBox::drop-down {
-#                                 subcontrol-origin: padding;
-#                                 subcontrol-position: top right;
-#                                 width: 15px;
-
-#                                 border-left-width: 0px;
-#                                 border-left-color: darkgray;
-#                                 border-left-style: solid; /* just a single line */
-#                                 border-top-right-radius: 3px; /* same radius as the QComboBox */
-#                                 border-bottom-right-radius: 3px;
-#                             }
-#                             QComboBox::down-arrow { 
-#                                 border:none;image: url(ui/angle-down.png);
-#                                 width: 14px;height: 14px;
-#                             }"""
-
-# cboxInterface: QtWidgets.QComboBox = window.findChild(QtWidgets.QComboBox, "cboxInterface")
-# cboxInterface.setStyleSheet(combo_style)
-# cboxChannel: QtWidgets.QComboBox = window.findChild(QtWidgets.QComboBox, "cboxChannel")
-# cboxChannel.setStyleSheet(combo_style)
-
-clearButton: QtWidgets.QPushButton = window.findChild(QtWidgets.QPushButton, "clearButton")
-saveButton: QtWidgets.QPushButton = window.findChild(QtWidgets.QPushButton, "saveButton")
-
-frameDataTableView: QtWidgets.QTableView = window.findChild(QtWidgets.QTableView, "frameDataTableView")
-frameDataTableView.setColumnWidth(50,250)
-model = ListModel([["0x502", "Item 1b"], ["0x503", "Item 2b"], ["0x502", "Item 3b"]])
-frameDataTableView.setModel(model)
-
-statusBar: QtWidgets.QStatusBar = window.findChild(QtWidgets.QStatusBar, "statusbar")
-statusBar.showMessage("waiting for CAN device...")
-window.show()
-app.exec()
+if __name__ == "__main__":
+    ui = UI()
+    ui.start()
+    ui.add_new_frame("0x403", "22.3")
