@@ -4,17 +4,19 @@ from canson.canson import CANson
 from canson.canFilter import CANFilter
 from ui.app import UI
 
+
 class CANVisualizer:
     def __init__(self) -> None:
         self.ui = UI()
         self.canson = CANson()
         self.interface = "socketcan"
         self.channel = "vcan0"
-        self.lock = threading.Lock()
         self.canson = CANson()
-        self.can_filter = CANFilter(self.canson, channel=self.channel, interface=self.interface)
+        self.can_filter = CANFilter(
+            self.canson, channel=self.channel, interface=self.interface
+        )
+        self.can_filter.newData.connect(self.ui.add_new_frame)
         self.can_filter.start()
-        self.can_filter.newData.connect(self.ui.add_new_frame)        
 
 
 # interface = "socketcan"
@@ -66,4 +68,4 @@ class CANVisualizer:
 
 if __name__ == "__main__":
     canviz = CANVisualizer()
-    # canviz.ui.start() 
+    canviz.ui.start()
