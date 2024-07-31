@@ -8,15 +8,16 @@ from ui.app import UI
 class CANVisualizer:
     def __init__(self) -> None:
         self.ui = UI()
-        self.canson = CANson()
         self.interface = "socketcan"
         self.channel = "vcan0"
-        self.canson = CANson()
-        self.can_filter = CANFilter(
-            self.canson, channel=self.channel, interface=self.interface
-        )
+        self.can_filter = CANFilter(channel=self.channel, interface=self.interface)
         self.can_filter.newData.connect(self.ui.add_new_frame)
-        self.can_filter.start()
+        self.can_filter.noDevice.connect(self.ui.enable_start_button)
+        self.can_filter.initialization()
+        # self.ui.enable_start_button(False)
+        self.ui.startBtn.clicked.connect(self.can_filter.start)
+
+        # self.can_filter.start()
 
 
 # interface = "socketcan"

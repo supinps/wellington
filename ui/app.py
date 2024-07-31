@@ -1,14 +1,15 @@
 import sys
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QAbstractTableModel, Qt, QModelIndex
+from PySide6.QtCore import QAbstractTableModel, Qt, QModelIndex, QObject, Slot
 from qt_material import apply_stylesheet
 
 __all__ = ["UI"]
 
+
 class ListModel(QAbstractTableModel):
     def __init__(self, data=None):
-        super(ListModel, self).__init__()        
+        super(ListModel, self).__init__()
         self._data = data or []
         self._column_names = ["Frame ID", "Frame Data"]
 
@@ -17,7 +18,6 @@ class ListModel(QAbstractTableModel):
 
     def columnCount(self, parent=QModelIndex()):
         return 2  # Two columns
-    
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
@@ -37,27 +37,48 @@ class ListModel(QAbstractTableModel):
         self._data.append([value1, value2])
         self.endInsertRows()
 
-class UI:
-        def __init__(self):
-            self.loader = QUiLoader()
-            self.app = QtWidgets.QApplication(sys.argv)
-            apply_stylesheet(self.app, theme='light_blue.xml')
-            self.window: QtWidgets.QMainWindow = self.loader.load("ui/app.ui", None)
-            self.clearButton: QtWidgets.QPushButton = self.window.findChild(QtWidgets.QPushButton, "clearButton")
-            self.saveButton: QtWidgets.QPushButton = self.window.findChild(QtWidgets.QPushButton, "saveButton")
-            self.frameDataTableView: QtWidgets.QTableView = self.window.findChild(QtWidgets.QTableView, "frameDataTableView")
-            self.frameDataTableView.setColumnWidth(50,250)
-            self.model = ListModel([["0x502", "Item 1b"], ["0x503", "Item 2b"], ["0x502", "Item 3b"]])
-            self.frameDataTableView.setModel(self.model)
-            self.statusBar: QtWidgets.QStatusBar = self.window.findChild(QtWidgets.QStatusBar, "statusbar")
-            self.statusBar.showMessage("waiting for CAN device...")
 
-        def start(self):
-            self.window.show()
-            self.app.exec()
-        
-        def add_new_frame(self, frameID: str, frameData: str) -> None:
-            self.model.appendData(frameID, frameData)
+class UI(QObject):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.loader = QUiLoader()
+        self.app = QtWidgets.QApplication(sys.argv)
+        apply_stylesheet(self.app, theme="light_blue.xml")
+        self.window: QtWidgets.QMainWindow = self.loader.load("ui/app.ui", None)
+        self.startBtn: QtWidgets.QPushButton = self.window.findChild(
+            QtWidgets.QPushButton, "startButton"
+        )
+        self.clearButton: QtWidgets.QPushButton = self.window.findChild(
+            QtWidgets.QPushButton, "clearButton"
+        )
+        self.saveButton: QtWidgets.QPushButton = self.window.findChild(
+            QtWidgets.QPushButton, "saveButton"
+        )
+        self.frameDataTableView: QtWidgets.QTableView = self.window.findChild(
+            QtWidgets.QTableView, "frameDataTableView"
+        )
+        self.frameDataTableView.setColumnWidth(50, 250)
+        self.model = ListModel(
+            [["0x502", "Item 1b"], ["0x503", "Item 2b"], ["0x502", "Item 3b"]]
+        )
+        self.frameDataTableView.setModel(self.model)
+        self.statusBar: QtWidgets.QStatusBar = self.window.findChild(
+            QtWidgets.QStatusBar, "statusbar"
+        )
+        self.statusBar.showMessage("waiting for CAN device...")
+
+    def start(self):
+        self.window.show()
+        self.app.exec()
+
+    def add_new_frame(self, frameID: str, frameData: str) -> None:
+        self.model.appendData(frameID, frameData)
+
+    @Slot(bool)
+    def enable_start_button(self, enable):
+        self.startBtn.setEnabled(enable)
+        print(f"{self.startBtn.isEnabled()=}")
+
 
 if __name__ == "__main__":
     ui = UI()
