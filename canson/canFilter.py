@@ -17,21 +17,27 @@ filters = [
 
 class CANFilter(QThread):
     newData = Signal(str, str)
+    noDevice = Signal(bool)
 
-    def __init__(
-        self, canson: CANson, channel="vcan0", interface="socketcan", filters=None
-    ) -> None:
+    def __init__(self, channel="vcan0", interface="socketcan", filters=None) -> None:
         super().__init__()
-        self.canson = canson
+        self.canson = CANson()
         self.channel = channel
         self.interface = interface
-        self.bus = can.Bus(channel, interface)
+        self.bus = None
         self.filters = filters
-        self.filters_changed = False
         self.timeout = 0.5
-        self.max_num_entry = 10
         self._key_lock = threading.Lock()
-        self.set_filters()
+        # self.initialization()
+
+    def initialization(self):
+        try:
+            self.bus = can.Bus(channel, interface)
+            self.set_filters()
+            return "CAN device connected successfully"
+        except OSError:
+            self.noDevice.emit(False)
+            return "CAN device connection failed"
 
     def set_filters(self, filters=None):
         if filters == None:
