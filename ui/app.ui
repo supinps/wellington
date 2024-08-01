@@ -150,7 +150,7 @@
        <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Orientation::Horizontal</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -248,7 +248,23 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QTableView" name="frameIDTableView"/>
+           <widget class="QTableWidget" name="frameIDTable">
+            <property name="gridStyle">
+             <enum>Qt::PenStyle::NoPen</enum>
+            </property>
+            <attribute name="horizontalHeaderMinimumSectionSize">
+             <number>100</number>
+            </attribute>
+            <attribute name="horizontalHeaderDefaultSectionSize">
+             <number>200</number>
+            </attribute>
+            <attribute name="horizontalHeaderStretchLastSection">
+             <bool>true</bool>
+            </attribute>
+            <attribute name="verticalHeaderVisible">
+             <bool>false</bool>
+            </attribute>
+           </widget>
           </item>
           <item>
            <widget class="QWidget" name="widget_2" native="true">
@@ -323,7 +339,7 @@
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="layoutDirection">
-    <enum>Qt::LeftToRight</enum>
+    <enum>Qt::LayoutDirection::LeftToRight</enum>
    </property>
    <property name="sizeGripEnabled">
     <bool>true</bool>

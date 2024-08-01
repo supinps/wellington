@@ -65,6 +65,12 @@ class UI(QObject):
         self.statusBar: QtWidgets.QStatusBar = self.window.findChild(
             QtWidgets.QStatusBar, "statusbar"
         )
+        self.frameIDTable: QtWidgets.QTableWidget = self.window.findChild(
+            QtWidgets.QTableWidget, "frameIDTable"
+        )
+        self.frameIDTable.setColumnCount(2)
+        self.frameIDTable.setRowCount(10)
+        self.frameIDTable.setHorizontalHeaderLabels(["Frame ID", "Frame Name"])
         self.statusBar.showMessage("waiting for CAN device...")
 
     def start(self):
@@ -73,6 +79,17 @@ class UI(QObject):
 
     def add_new_frame(self, frameID: str, frameData: str) -> None:
         self.model.appendData(frameID, frameData)
+    
+    def populateFrameNames(self, frameIDList: list):
+        row_count = len(frameIDList)
+        col_count = len(frameIDList[0]) if row_count > 0 else 0
+
+        self.frameIDTable.setRowCount(row_count)
+        self.frameIDTable.setColumnCount(col_count)
+
+        for row in range(row_count):
+            for col in range(col_count):
+                self.frameIDTable.setItem(row, col, QtWidgets.QTableWidgetItem(str(frameIDList[row][col])))
 
     @Slot(bool)
     def enable_start_button(self, enable):
