@@ -108,7 +108,7 @@ class CANson:
     def get_gui_frame_details(self):
         frame_details = []
         for frame in self.valid_frame_list:
-            frame_details.append([frame["name"], frame["id"]])
+            frame_details.append([frame["id"], frame["name"]])
         return frame_details
 
 
