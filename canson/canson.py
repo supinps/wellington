@@ -105,37 +105,55 @@ class CANson:
             )
         return filter_list
 
+    def get_gui_frame_details(self):
+        frame_details = []
+        for frame in self.valid_frame_list:
+            frame_details.append([frame["name"], frame["id"]])
+        return frame_details
+
+
 class ConfigSon:
     def __init__(self) -> None:
         self.json_path = os.path.join(canson_dir, "config.json")
         self.file = json.load(open(self.json_path))
         self.validItems = self.get_valid_items()
-    
+
     def get_valid_items(self) -> list:
         valid_items = []
         for item in self.file:
             if self.__isValid(item):
                 valid_items.append(item)
         return valid_items
-    
+
     @staticmethod
     def __isValid(item: dict) -> bool:
-        channel_valid = True
         if not all(key in item for key in ["interface", "channel"]):
-            return False        
+            return False
         if not isinstance(item["interface"], (str)):
             return False
-        
         if isinstance(item["channel"], (list)):
             if not all(isinstance(i, (str, int)) for i in item["channel"]):
                 return False
-        elif not isinstance(item["channel"], (str, int)):
-            return False            
+        else:
+            return False
         return True
+
+    def get_interfaces(self):
+        interfaces = []
+        for item in self.validItems:
+            interfaces.append(item["interface"])
+        return interfaces
+
+    def get_channels(self):
+        channels = []
+        for item in self.validItems:
+            channels.append([str(i) for i in item["channel"]])
+        return channels
 
 
 if __name__ == "__main__":
-    # cs = CANson()
+    cs = CANson()
+    print(cs.get_gui_frame_details())
     # data = 2
     # frame = cs.get_frame(0x101)
     # print(cs.get_frame_name(frame))
@@ -147,3 +165,5 @@ if __name__ == "__main__":
     cs = ConfigSon()
     print(cs.file)
     print(cs.validItems)
+    print(cs.get_interfaces())
+    print(cs.get_channels())
