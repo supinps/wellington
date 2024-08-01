@@ -120,13 +120,17 @@ class ConfigSon:
     
     @staticmethod
     def __isValid(item: dict) -> bool:
+        channel_valid = True
         if not all(key in item for key in ["interface", "channel"]):
-            print("l")
-            return False
+            return False        
         if not isinstance(item["interface"], (str)):
             return False
-        if not all(isinstance(i, (str, int)) for i in item["channel"]):
-            return False
+        
+        if isinstance(item["channel"], (list)):
+            if not all(isinstance(i, (str, int)) for i in item["channel"]):
+                return False
+        elif not isinstance(item["channel"], (str, int)):
+            return False            
         return True
 
 
