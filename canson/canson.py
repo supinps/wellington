@@ -105,13 +105,41 @@ class CANson:
             )
         return filter_list
 
+class ConfigSon:
+    def __init__(self) -> None:
+        self.json_path = os.path.join(canson_dir, "config.json")
+        self.file = json.load(open(self.json_path))
+        self.validItems = self.get_valid_items()
+    
+    def get_valid_items(self) -> list:
+        valid_items = []
+        for item in self.file:
+            if self.__isValid(item):
+                valid_items.append(item)
+        return valid_items
+    
+    @staticmethod
+    def __isValid(item: dict) -> bool:
+        if not all(key in item for key in ["interface", "channel"]):
+            print("l")
+            return False
+        if not isinstance(item["interface"], (str)):
+            return False
+        if not all(isinstance(i, (str, int)) for i in item["channel"]):
+            return False
+        return True
+
 
 if __name__ == "__main__":
-    cs = CANson()
-    data = 2
-    frame = cs.get_frame(0x101)
-    print(cs.get_frame_name(frame))
-    print(cs.get_frame_data(frame, data.to_bytes(4, "little")))
-    print(cs.get_frame_type(frame))
-    print(cs.get_filters())
-    print(cs.valid_frame_list)
+    # cs = CANson()
+    # data = 2
+    # frame = cs.get_frame(0x101)
+    # print(cs.get_frame_name(frame))
+    # print(cs.get_frame_data(frame, data.to_bytes(4, "little")))
+    # print(cs.get_frame_type(frame))
+    # print(cs.get_filters())
+    # print(cs.valid_frame_list)
+
+    cs = ConfigSon()
+    print(cs.file)
+    print(cs.validItems)

@@ -1,0 +1,10 @@
+[
+    {
+        "interface": "socketcan",
+        "channel": ["vcan0", "vcan1", "can0"]
+    },
+    {
+        "interface": "ixxat",
+        "channel": [0, 1, 2]
+    }
+]
