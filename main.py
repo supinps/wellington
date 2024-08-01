@@ -16,7 +16,7 @@ class CANVisualizer:
         self.can_filter.initialization()
         # self.ui.enable_start_button(False)
         self.ui.startBtn.clicked.connect(self.can_filter.start)
-
+        self.ui.populateFrameNames(self.can_filter.canson.get_gui_frame_details())
         # self.can_filter.start()
 
 
