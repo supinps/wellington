@@ -45,6 +45,12 @@ class UI(QObject):
         self.app = QtWidgets.QApplication(sys.argv)
         apply_stylesheet(self.app, theme="light_blue.xml")
         self.window: QtWidgets.QMainWindow = self.loader.load("ui/app.ui", None)
+        self.cBoxInterface: QtWidgets.QComboBox = self.window.findChild(
+            QtWidgets.QComboBox, "cBoxInterface"
+        )
+        self.cBoxChannel: QtWidgets.QComboBox = self.window.findChild(
+            QtWidgets.QComboBox, "cBoxChannel"
+        )
         self.startBtn: QtWidgets.QPushButton = self.window.findChild(
             QtWidgets.QPushButton, "startButton"
         )
@@ -72,6 +78,8 @@ class UI(QObject):
         self.frameIDTable.setRowCount(10)
         self.frameIDTable.setHorizontalHeaderLabels(["Frame ID", "Frame Name"])
         self.statusBar.showMessage("waiting for CAN device...")
+        self.channels = None
+        self.cBoxInterface.currentIndexChanged.connect(self.update_channels)
 
     def start(self):
         self.window.show()
@@ -79,7 +87,7 @@ class UI(QObject):
 
     def add_new_frame(self, frameID: str, frameData: str) -> None:
         self.model.appendData(frameID, frameData)
-    
+
     def populateFrameNames(self, frameIDList: list):
         row_count = len(frameIDList)
         col_count = len(frameIDList[0]) if row_count > 0 else 0
@@ -89,12 +97,25 @@ class UI(QObject):
 
         for row in range(row_count):
             for col in range(col_count):
-                self.frameIDTable.setItem(row, col, QtWidgets.QTableWidgetItem(str(frameIDList[row][col])))
+                self.frameIDTable.setItem(
+                    row, col, QtWidgets.QTableWidgetItem(str(frameIDList[row][col]))
+                )
 
     @Slot(bool)
     def enable_start_button(self, enable):
         self.startBtn.setEnabled(enable)
         print(f"{self.startBtn.isEnabled()=}")
+
+    def add_interfaces(self, interfaces: list[str]):
+        self.cBoxInterface.addItems(interfaces)
+
+    def update_channels(self, index=0):
+        if self.channels != None:
+            self.cBoxChannel.clear()
+            self.cBoxChannel.addItems(self.channels[index])
+
+    def get_channel_list(self, channel_list: list[str]):
+        self.channels = channel_list
 
 
 if __name__ == "__main__":

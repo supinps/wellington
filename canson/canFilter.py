@@ -1,7 +1,7 @@
 import time
 import can
 import threading
-from .canson import CANson
+from .canson import CANson, ConfigSon
 from PySide6.QtCore import QThread, Signal
 
 __all__ = ["CANFilter"]
@@ -22,6 +22,7 @@ class CANFilter(QThread):
     def __init__(self, channel="vcan0", interface="socketcan", filters=None) -> None:
         super().__init__()
         self.canson = CANson()
+        self.configson = ConfigSon()
         self.channel = channel
         self.interface = interface
         self.bus = None

@@ -70,7 +70,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QComboBox" name="cboxChannel">
+        <widget class="QComboBox" name="cBoxInterface">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -93,25 +93,10 @@
          <property name="styleSheet">
           <string notr="true"/>
          </property>
-         <item>
-          <property name="text">
-           <string>socketcan</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>peakcan</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>ixxat</string>
-          </property>
-         </item>
         </widget>
        </item>
        <item>
-        <widget class="QComboBox" name="cboxInterface">
+        <widget class="QComboBox" name="cBoxChannel">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
@@ -150,7 +135,7 @@
        <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
-          <enum>Qt::Orientation::Horizontal</enum>
+          <enum>Qt::Horizontal</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -250,7 +235,7 @@
           <item>
            <widget class="QTableWidget" name="frameIDTable">
             <property name="gridStyle">
-             <enum>Qt::PenStyle::NoPen</enum>
+             <enum>Qt::NoPen</enum>
             </property>
             <attribute name="horizontalHeaderMinimumSectionSize">
              <number>100</number>
@@ -339,7 +324,7 @@
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="layoutDirection">
-    <enum>Qt::LayoutDirection::LeftToRight</enum>
+    <enum>Qt::LeftToRight</enum>
    </property>
    <property name="sizeGripEnabled">
     <bool>true</bool>
