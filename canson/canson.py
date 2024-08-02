@@ -3,7 +3,7 @@ import sys
 import os
 
 
-__all__ = ["CANson"]
+__all__ = ["CANson", "ConfigSon"]
 canson_dir = os.path.dirname(__file__)
 # Construct the full path to the JSON file
 json_path = os.path.join(canson_dir, "canson.json")
