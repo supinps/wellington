@@ -10,16 +10,17 @@ class CANVisualizer:
         self.ui = UI()
         self.interface = "socketcan"
         self.channel = "vcan0"
-        self.can_filter = CANFilter(channel=self.channel, interface=self.interface)
+        self.can_filter = CANFilter()
         self.can_filter.newData.connect(self.ui.add_new_frame)
-        self.can_filter.noDevice.connect(self.ui.enable_start_button)
-        self.can_filter.initialization()
+        self.can_filter.Device.connect(self.ui.handle_Device)
+        # self.can_filter.initialization()
         # self.ui.enable_start_button(False)
         self.ui.startBtn.clicked.connect(self.can_filter.start)
         self.ui.populateFrameNames(self.can_filter.canson.get_gui_frame_details())
         self.ui.add_interfaces(self.can_filter.configson.get_interfaces())
         self.ui.get_channel_list(self.can_filter.configson.get_channels())
         self.ui.update_channels()
+        self.ui.busData.connect(self.can_filter.bus_init)
         # self.can_filter.start()
 
 
