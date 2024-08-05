@@ -144,10 +144,16 @@ class ConfigSon:
             interfaces.append(item["interface"])
         return interfaces
 
-    def get_channels(self):
+    def get_channels_gui(self):
         channels = []
         for item in self.validItems:
             channels.append([str(i) for i in item["channel"]])
+        return channels
+
+    def get_channels(self):
+        channels = []
+        for item in self.validItems:
+            channels.append(item["channel"])
         return channels
 
 

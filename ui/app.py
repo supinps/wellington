@@ -92,7 +92,10 @@ class UI(QObject):
         self.statusBar.showMessage("waiting for CAN device...")
         self.channels = None
         self.cBoxInterface.currentIndexChanged.connect(self.update_channels)
+        self.go_back_to_defauilt_msg = False
         self.connectButton.clicked.connect(self.onConnectClicked)
+        self.startBtn.clicked.connect(self.onStartBtnClicked)
+        self.statusBar.messageChanged.connect(self.onMessageChanged)
         self.initialization()
 
     def initialization(self):
@@ -105,6 +108,7 @@ class UI(QObject):
 
     def add_new_frame(self, frameID: str, frameData: str) -> None:
         self.model.appendData(frameID, frameData)
+        self.frameDataTableView.scrollToBottom()
 
     def populateFrameNames(self, frameIDList: list):
         row_count = len(frameIDList)
@@ -125,10 +129,26 @@ class UI(QObject):
             self.cBoxInterface.currentIndex(), self.cBoxChannel.currentIndex()
         )
 
+    @Slot()
+    def onStartBtnClicked(self):
+        self.startBtn.setText("Stop")
+
     @Slot(bool)
     def handle_Device(self, enable: bool):
         self.startBtn.setEnabled(enable)
         self.connectButton.setEnabled(not enable)
+        if enable:
+            self.go_back_to_defauilt_msg = False
+            self.statusBar.showMessage("CAN device connected successfully")
+        else:
+            self.statusBar.showMessage("CAN device connection failed", timeout=5000)
+            self.go_back_to_defauilt_msg = True
+
+    @Slot()
+    def onMessageChanged(self):
+        if self.go_back_to_defauilt_msg:
+            self.statusBar.showMessage("waiting for CAN device...")
+            self.go_back_to_defauilt_msg = False
 
     def add_interfaces(self, interfaces: list[str]):
         self.cBoxInterface.addItems(interfaces)
