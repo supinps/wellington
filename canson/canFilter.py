@@ -4,6 +4,9 @@ import threading
 from .canson import CANson, ConfigSon
 from PySide6.QtCore import QThread, Signal
 import numpy as np
+import contextlib
+import sys
+import os
 
 __all__ = ["CANFilter"]
 
@@ -35,14 +38,16 @@ class CANFilter(QThread):
 
     def bus_init(self, interface_index, channel_index):
         try:
-            self.bus = can.Bus(
-                interface=self.interfaces[interface_index],
-                channel=self.channels[interface_index][channel_index],
-            )
-            self.set_filters()
+            with open(os.devnull, "w") as devnull:
+                with contextlib.redirect_stderr(devnull):
+                    self.bus = can.Bus(
+                        interface=self.interfaces[interface_index],
+                        channel=self.channels[interface_index][channel_index],
+                    )
+                    self.set_filters()
             self.Device.emit(True)
             # return "CAN device connected successfully"
-        except OSError:
+        except (OSError, can.exceptions.CanInterfaceNotImplementedError):
             self.Device.emit(False)
             # return "CAN device connection failed"
 
