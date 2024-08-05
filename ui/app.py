@@ -1,7 +1,9 @@
 import sys
+import os
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QAbstractTableModel, Qt, QModelIndex, QObject, Slot
+from PySide6.QtCore import QAbstractTableModel, Qt, QModelIndex, QObject, Slot, Signal
+from PySide6.QtGui import QIcon, QPixmap
 from qt_material import apply_stylesheet
 
 __all__ = ["UI"]
@@ -39,6 +41,8 @@ class ListModel(QAbstractTableModel):
 
 
 class UI(QObject):
+    busData = Signal(int, int)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.loader = QUiLoader()
@@ -51,6 +55,14 @@ class UI(QObject):
         self.cBoxChannel: QtWidgets.QComboBox = self.window.findChild(
             QtWidgets.QComboBox, "cBoxChannel"
         )
+        self.connectButton: QtWidgets.QPushButton = self.window.findChild(
+            QtWidgets.QPushButton, "connectButton"
+        )
+        self.path = os.path.dirname(__file__)
+        pixmap = QPixmap(os.path.join(self.path, "bitmap.png"))
+        icon = QIcon(pixmap)
+        self.connectButton.setIcon(icon)
+        self.connectButton.setStyleSheet("border:none;")
         self.startBtn: QtWidgets.QPushButton = self.window.findChild(
             QtWidgets.QPushButton, "startButton"
         )
@@ -80,6 +92,12 @@ class UI(QObject):
         self.statusBar.showMessage("waiting for CAN device...")
         self.channels = None
         self.cBoxInterface.currentIndexChanged.connect(self.update_channels)
+        self.connectButton.clicked.connect(self.onConnectClicked)
+        self.initialization()
+
+    def initialization(self):
+        self.startBtn.setEnabled(False)
+        self.connectButton.setEnabled(True)
 
     def start(self):
         self.window.show()
@@ -101,10 +119,16 @@ class UI(QObject):
                     row, col, QtWidgets.QTableWidgetItem(str(frameIDList[row][col]))
                 )
 
+    @Slot(int, int)
+    def onConnectClicked(self):
+        self.busData.emit(
+            self.cBoxInterface.currentIndex(), self.cBoxChannel.currentIndex()
+        )
+
     @Slot(bool)
-    def enable_start_button(self, enable):
+    def handle_Device(self, enable: bool):
         self.startBtn.setEnabled(enable)
-        print(f"{self.startBtn.isEnabled()=}")
+        self.connectButton.setEnabled(not enable)
 
     def add_interfaces(self, interfaces: list[str]):
         self.cBoxInterface.addItems(interfaces)

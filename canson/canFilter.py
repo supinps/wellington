@@ -3,6 +3,7 @@ import can
 import threading
 from .canson import CANson, ConfigSon
 from PySide6.QtCore import QThread, Signal
+import numpy as np
 
 __all__ = ["CANFilter"]
 
@@ -17,34 +18,40 @@ filters = [
 
 class CANFilter(QThread):
     newData = Signal(str, str)
-    noDevice = Signal(bool)
+    Device = Signal(bool)
 
-    def __init__(self, channel="vcan0", interface="socketcan", filters=None) -> None:
+    def __init__(self) -> None:
         super().__init__()
         self.canson = CANson()
         self.configson = ConfigSon()
-        self.channel = channel
-        self.interface = interface
         self.bus = None
-        self.filters = filters
+        self.filters = self.canson.get_filters()
         self.timeout = 0.5
         self._key_lock = threading.Lock()
+        self.interfaces = self.configson.get_interfaces()
+        self.channels = self.configson.get_channels()
+        self.index_list = np.arange(len(self.filters))
         # self.initialization()
 
-    def initialization(self):
+    def bus_init(self, interface_index, channel_index):
         try:
-            self.bus = can.Bus(channel, interface)
+            self.bus = can.Bus(
+                interface=self.interfaces[interface_index],
+                channel=self.channels[interface_index][channel_index],
+            )
             self.set_filters()
-            return "CAN device connected successfully"
+            self.Device.emit(True)
+            # return "CAN device connected successfully"
         except OSError:
-            self.noDevice.emit(False)
-            return "CAN device connection failed"
+            self.Device.emit(False)
+            # return "CAN device connection failed"
 
-    def set_filters(self, filters=None):
-        if filters == None:
-            filters = self.canson.get_filters()
+    def set_filters(self):
+        filter_list = []
+        for index in self.index_list:
+            filter_list.append(self.filters[index])
         with self._key_lock:
-            self.bus.set_filters(filters)
+            self.bus.set_filters(filter_list)
 
     def run(self):
         while True:
