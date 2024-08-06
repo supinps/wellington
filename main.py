@@ -19,6 +19,7 @@ class CANVisualizer:
         self.ui.populateFrameNames(self.can_filter.canson.get_gui_frame_details())
         self.ui.add_interfaces(self.can_filter.configson.get_interfaces())
         self.ui.get_channel_list(self.can_filter.configson.get_channels_gui())
+        self.ui.filterChanged.connect(self.can_filter.set_index_list)
         self.ui.update_channels()
         self.ui.busData.connect(self.can_filter.bus_init)
         # self.can_filter.start()
