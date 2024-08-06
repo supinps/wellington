@@ -51,9 +51,11 @@ class CANFilter(QThread):
             self.Device.emit(False)
             # return "CAN device connection failed"
 
-    def set_filters(self):
+    def set_filters(self, index_list=None):
+        if index_list == None:
+            index_list = self.index_list
         filter_list = []
-        for index in self.index_list:
+        for index in index_list:
             filter_list.append(self.filters[index])
         with self._key_lock:
             self.bus.set_filters(filter_list)

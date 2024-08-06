@@ -160,7 +160,7 @@
        <item>
         <spacer name="horizontalSpacer">
          <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+          <enum>Qt::Orientation::Horizontal</enum>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
@@ -226,10 +226,16 @@
           </font>
          </property>
          <property name="sizeAdjustPolicy">
-          <enum>QAbstractScrollArea::AdjustToContents</enum>
+          <enum>QAbstractScrollArea::SizeAdjustPolicy::AdjustToContents</enum>
          </property>
          <property name="autoScroll">
           <bool>true</bool>
+         </property>
+         <property name="editTriggers">
+          <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+         </property>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::SelectionMode::NoSelection</enum>
          </property>
          <property name="showGrid">
           <bool>false</bool>
@@ -265,17 +271,20 @@
           </property>
           <item>
            <widget class="QTableWidget" name="frameIDTable">
+            <property name="editTriggers">
+             <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
+            </property>
             <property name="alternatingRowColors">
              <bool>false</bool>
             </property>
             <property name="selectionMode">
-             <enum>QAbstractItemView::MultiSelection</enum>
+             <enum>QAbstractItemView::SelectionMode::MultiSelection</enum>
             </property>
             <property name="selectionBehavior">
-             <enum>QAbstractItemView::SelectRows</enum>
+             <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
             </property>
             <property name="gridStyle">
-             <enum>Qt::NoPen</enum>
+             <enum>Qt::PenStyle::NoPen</enum>
             </property>
             <attribute name="horizontalHeaderMinimumSectionSize">
              <number>100</number>
@@ -304,7 +313,7 @@
               <number>0</number>
              </property>
              <item>
-              <widget class="QPushButton" name="clearButton">
+              <widget class="QPushButton" name="filterButton">
                <property name="sizePolicy">
                 <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
                  <horstretch>0</horstretch>
@@ -323,7 +332,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>Clear Filter</string>
+                <string>Apply Filter</string>
                </property>
               </widget>
              </item>
@@ -364,7 +373,7 @@
   </widget>
   <widget class="QStatusBar" name="statusbar">
    <property name="layoutDirection">
-    <enum>Qt::LeftToRight</enum>
+    <enum>Qt::LayoutDirection::LeftToRight</enum>
    </property>
    <property name="sizeGripEnabled">
     <bool>true</bool>
