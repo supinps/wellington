@@ -49,6 +49,8 @@ class ListModel(QAbstractTableModel):
 
 class UI(QObject):
     busData = Signal(int, int)
+    filterChanged = Signal(list)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.loader = QUiLoader()
@@ -113,6 +115,9 @@ class UI(QObject):
         self.initialization()
         self.saveButton.clicked.connect(self.model.saveFrames)
 
+        self.filterButton: QtWidgets.QPushButton = self.window.findChild(QtWidgets.QPushButton, "filterButton")
+        self.filterButton.clicked.connect(self.onApplyFilter)
+
     def initialization(self):
         self.startBtn.setEnabled(False)
         self.connectButton.setEnabled(True)
@@ -120,6 +125,14 @@ class UI(QObject):
     def start(self):
         self.window.show()
         self.app.exec()
+    
+    def onApplyFilter(self):
+        ModelIndexLists = self.frameIDTable.selectedIndexes()
+        if len(ModelIndexLists) > 0:
+            IndexSet = set()
+            for i in ModelIndexLists:
+                IndexSet.add(i.row())        
+            self.filterChanged.emit([1])
 
     def add_new_frame(self, frameID: str, frameData: str) -> None:
         self.model.appendData(frameID, frameData)
