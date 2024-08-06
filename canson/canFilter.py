@@ -1,7 +1,12 @@
 import time
 import can
 import threading
-from .canson import CANson
+from .canson import CANson, ConfigSon
+from PySide6.QtCore import QThread, Signal
+import numpy as np
+import contextlib
+import sys
+import os
 
 __all__ = ["CANFilter"]
 
@@ -14,49 +19,55 @@ filters = [
 ]
 
 
-class CANFilter:
-    def __init__(self, channel="vcan0", interface="socketcan", filters=None) -> None:
-        self.channel = channel
-        self.interface = interface
-        self.bus = can.Bus(channel, interface)
-        self.filters = filters
-        self.filters_changed = False
-        self.timeout = 1
-        self.__gui_list = []
-        self.max_num_entry = 10
+class CANFilter(QThread):
+    newData = Signal(str, str)
+    Device = Signal(bool)
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.canson = CANson()
+        self.configson = ConfigSon()
+        self.bus = None
+        self.filters = self.canson.get_filters()
+        self.timeout = 0.5
         self._key_lock = threading.Lock()
+        self.interfaces = self.configson.get_interfaces()
+        self.channels = self.configson.get_channels()
+        self.index_list = np.arange(len(self.filters))
+        # self.initialization()
 
-    def set_filters(self, filters):
-        self.bus.set_filters(filters)
+    def bus_init(self, interface_index, channel_index):
+        try:
+            with open(os.devnull, "w") as devnull:
+                with contextlib.redirect_stderr(devnull):
+                    self.bus = can.Bus(
+                        interface=self.interfaces[interface_index],
+                        channel=self.channels[interface_index][channel_index],
+                    )
+                    self.set_filters()
+            self.Device.emit(True)
+            # return "CAN device connected successfully"
+        except (OSError, can.exceptions.CanInterfaceNotImplementedError):
+            self.Device.emit(False)
+            # return "CAN device connection failed"
 
-    def get_gui_list(self):
+    def set_filters(self):
+        filter_list = []
+        for index in self.index_list:
+            filter_list.append(self.filters[index])
         with self._key_lock:
-            return self.__gui_list
+            self.bus.set_filters(filter_list)
 
-    def set_gui_list(self, gui_list):
-        with self._key_lock:
-            self.__gui_list = gui_list
-
-    def __append_gui_list(self, name, data):
-        gui_list = self.get_gui_list()
-        if len(gui_list) < self.max_num_entry:
-            gui_list.append([name, data])
-        else:
-            gui_list.pop(0)
-            gui_list.append([name, data])
-        self.set_gui_list(gui_list)
-
-    def recv(self, canson: CANson):
+    def run(self):
         while True:
+            self._key_lock.acquire()
             msg = self.bus.recv(timeout=self.timeout)
+            self._key_lock.release()
             if msg != None:
-                # print(msg.arbitration_id)
-                # print(msg.data)
-                # print(msg)
-                frame = canson.get_frame(msg.arbitration_id)
-                name = canson.get_frame_name(frame)
-                data = canson.get_frame_data(frame, msg.data)
-                self.__append_gui_list(name, data)
+                frame = self.canson.get_frame(msg.arbitration_id)
+                name = self.canson.get_frame_name(frame)
+                data = self.canson.get_frame_data(frame, msg.data)
+                self.newData.emit(name, data)
 
 
 def filter():
