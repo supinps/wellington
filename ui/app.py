@@ -1,10 +1,10 @@
 import sys
-import os
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QAbstractTableModel, Qt, QModelIndex, QObject, Slot, Signal
-from PySide6.QtGui import QIcon, QPixmap
+from PySide6.QtCore import QAbstractTableModel, Qt, QModelIndex, QObject, Slot
 from qt_material import apply_stylesheet
+import pandas as pd
+from datetime import datetime as dt
 
 __all__ = ["UI"]
 
@@ -38,11 +38,16 @@ class ListModel(QAbstractTableModel):
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
         self._data.append([value1, value2])
         self.endInsertRows()
+    
+    def saveFrames(self):
+        df = pd.DataFrame(columns=self._column_names, data=self._data)
+        td = dt.today()
+        tt = td.time()
+        df.to_csv(f"frames_{td.year}{td.month}{td.day}_{tt.hour}{tt.minute}{tt.second}.csv", index=False)
+
 
 
 class UI(QObject):
-    busData = Signal(int, int)
-
     def __init__(self, parent=None):
         super().__init__(parent)
         self.loader = QUiLoader()
@@ -55,14 +60,6 @@ class UI(QObject):
         self.cBoxChannel: QtWidgets.QComboBox = self.window.findChild(
             QtWidgets.QComboBox, "cBoxChannel"
         )
-        self.connectButton: QtWidgets.QPushButton = self.window.findChild(
-            QtWidgets.QPushButton, "connectButton"
-        )
-        self.path = os.path.dirname(__file__)
-        pixmap = QPixmap(os.path.join(self.path, "bitmap.png"))
-        icon = QIcon(pixmap)
-        self.connectButton.setIcon(icon)
-        self.connectButton.setStyleSheet("border:none;")
         self.startBtn: QtWidgets.QPushButton = self.window.findChild(
             QtWidgets.QPushButton, "startButton"
         )
@@ -92,15 +89,7 @@ class UI(QObject):
         self.statusBar.showMessage("waiting for CAN device...")
         self.channels = None
         self.cBoxInterface.currentIndexChanged.connect(self.update_channels)
-        self.go_back_to_defauilt_msg = False
-        self.connectButton.clicked.connect(self.onConnectClicked)
-        self.startBtn.clicked.connect(self.onStartBtnClicked)
-        self.statusBar.messageChanged.connect(self.onMessageChanged)
-        self.initialization()
-
-    def initialization(self):
-        self.startBtn.setEnabled(False)
-        self.connectButton.setEnabled(True)
+        self.saveButton.clicked.connect(self.model.saveFrames)
 
     def start(self):
         self.window.show()
@@ -108,7 +97,6 @@ class UI(QObject):
 
     def add_new_frame(self, frameID: str, frameData: str) -> None:
         self.model.appendData(frameID, frameData)
-        self.frameDataTableView.scrollToBottom()
 
     def populateFrameNames(self, frameIDList: list):
         row_count = len(frameIDList)
@@ -123,32 +111,10 @@ class UI(QObject):
                     row, col, QtWidgets.QTableWidgetItem(str(frameIDList[row][col]))
                 )
 
-    @Slot(int, int)
-    def onConnectClicked(self):
-        self.busData.emit(
-            self.cBoxInterface.currentIndex(), self.cBoxChannel.currentIndex()
-        )
-
-    @Slot()
-    def onStartBtnClicked(self):
-        self.startBtn.setText("Stop")
-
     @Slot(bool)
-    def handle_Device(self, enable: bool):
+    def enable_start_button(self, enable):
         self.startBtn.setEnabled(enable)
-        self.connectButton.setEnabled(not enable)
-        if enable:
-            self.go_back_to_defauilt_msg = False
-            self.statusBar.showMessage("CAN device connected successfully")
-        else:
-            self.statusBar.showMessage("CAN device connection failed", timeout=5000)
-            self.go_back_to_defauilt_msg = True
-
-    @Slot()
-    def onMessageChanged(self):
-        if self.go_back_to_defauilt_msg:
-            self.statusBar.showMessage("waiting for CAN device...")
-            self.go_back_to_defauilt_msg = False
+        print(f"{self.startBtn.isEnabled()=}")
 
     def add_interfaces(self, interfaces: list[str]):
         self.cBoxInterface.addItems(interfaces)
