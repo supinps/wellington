@@ -66,8 +66,11 @@ class CANFilter(QThread):
             self.bus.set_filters(filter_list)
 
     def run(self):
+        i = 0
         while True:
             self._key_lock.acquire()
+            print(i)
+            i += 1
             msg = self.bus.recv(timeout=self.timeout)
             self._key_lock.release()
             if msg != None:
