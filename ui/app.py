@@ -1,7 +1,9 @@
 import sys
+import os
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QAbstractTableModel, Qt, QModelIndex, QObject, Slot
+from PySide6.QtCore import QAbstractTableModel, Qt, QModelIndex, QObject, Slot, Signal
+from PySide6.QtGui import QIcon, QPixmap
 from qt_material import apply_stylesheet
 import pandas as pd
 from datetime import datetime as dt
@@ -45,9 +47,8 @@ class ListModel(QAbstractTableModel):
         tt = td.time()
         df.to_csv(f"frames_{td.year}{td.month}{td.day}_{tt.hour}{tt.minute}{tt.second}.csv", index=False)
 
-
-
 class UI(QObject):
+    busData = Signal(int, int)
     def __init__(self, parent=None):
         super().__init__(parent)
         self.loader = QUiLoader()
@@ -60,6 +61,18 @@ class UI(QObject):
         self.cBoxChannel: QtWidgets.QComboBox = self.window.findChild(
             QtWidgets.QComboBox, "cBoxChannel"
         )
+        self.connectButton: QtWidgets.QPushButton = self.window.findChild(
+            QtWidgets.QPushButton, "connectButton"
+        )
+        self.path = os.path.dirname(__file__)
+        pixmapConnect = QPixmap(os.path.join(self.path, "connected.png"))
+        pixmapDisconnect = QPixmap(os.path.join(self.path, "disconnected.png"))
+        self.iconConnect = QIcon(pixmapConnect)
+        self.iconDisconnect = QIcon(pixmapDisconnect)
+        self.connectButton.setIcon(self.iconDisconnect)
+        self.connectButton.setStyleSheet("border:none; padding-top: 5px;")
+        self.connectButton.setCheckable(True)
+        self.connectButton.setChecked(False)
         self.startBtn: QtWidgets.QPushButton = self.window.findChild(
             QtWidgets.QPushButton, "startButton"
         )
@@ -89,7 +102,17 @@ class UI(QObject):
         self.statusBar.showMessage("waiting for CAN device...")
         self.channels = None
         self.cBoxInterface.currentIndexChanged.connect(self.update_channels)
+        self.go_back_to_defauilt_msg = False
+        self.connectButton.clicked.connect(self.onConnectClicked)
+        self.startBtn.clicked.connect(self.onStartBtnClicked)
+        self.statusBar.messageChanged.connect(self.onMessageChanged)
+        self.connectButton.toggled.connect(self.onConnectBtnToggled)
+        self.initialization()
         self.saveButton.clicked.connect(self.model.saveFrames)
+
+    def initialization(self):
+        self.startBtn.setEnabled(False)
+        self.connectButton.setEnabled(True)
 
     def start(self):
         self.window.show()
@@ -97,6 +120,7 @@ class UI(QObject):
 
     def add_new_frame(self, frameID: str, frameData: str) -> None:
         self.model.appendData(frameID, frameData)
+        self.frameDataTableView.scrollToBottom()
 
     def populateFrameNames(self, frameIDList: list):
         row_count = len(frameIDList)
@@ -112,9 +136,38 @@ class UI(QObject):
                 )
 
     @Slot(bool)
-    def enable_start_button(self, enable):
+    def onConnectBtnToggled(self, checked: bool):
+        if checked:
+            self.connectButton.setIcon(self.iconConnect)
+        else:
+            self.connectButton.setIcon(self.iconDisconnect)
+
+    @Slot(int, int)
+    def onConnectClicked(self):
+        self.busData.emit(
+            self.cBoxInterface.currentIndex(), self.cBoxChannel.currentIndex()
+        )
+
+    @Slot()
+    def onStartBtnClicked(self):
+        self.startBtn.setText("Stop")
+
+    @Slot(bool)
+    def handle_Device(self, enable: bool):
         self.startBtn.setEnabled(enable)
-        print(f"{self.startBtn.isEnabled()=}")
+        self.connectButton.setEnabled(not enable)
+        if enable:
+            self.go_back_to_defauilt_msg = False
+            self.statusBar.showMessage("CAN device connected successfully")
+        else:
+            self.statusBar.showMessage("CAN device connection failed", timeout=5000)
+            self.go_back_to_defauilt_msg = True
+
+    @Slot()
+    def onMessageChanged(self):
+        if self.go_back_to_defauilt_msg:
+            self.statusBar.showMessage("waiting for CAN device...")
+            self.go_back_to_defauilt_msg = False
 
     def add_interfaces(self, interfaces: list[str]):
         self.cBoxInterface.addItems(interfaces)

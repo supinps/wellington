@@ -140,6 +140,9 @@
            <height>55</height>
           </size>
          </property>
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -262,6 +265,15 @@
           </property>
           <item>
            <widget class="QTableWidget" name="frameIDTable">
+            <property name="alternatingRowColors">
+             <bool>false</bool>
+            </property>
+            <property name="selectionMode">
+             <enum>QAbstractItemView::MultiSelection</enum>
+            </property>
+            <property name="selectionBehavior">
+             <enum>QAbstractItemView::SelectRows</enum>
+            </property>
             <property name="gridStyle">
              <enum>Qt::NoPen</enum>
             </property>
