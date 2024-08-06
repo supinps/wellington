@@ -93,6 +93,9 @@ class UI(QObject):
         self.frameIDTable.setColumnCount(2)
         self.frameIDTable.setRowCount(10)
         self.frameIDTable.setHorizontalHeaderLabels(["Frame ID", "Frame Name"])
+        self.frameIDTable.setStyleSheet(
+            "QTableWidget::item:selected{background-color: none;}"
+        )
         self.statusBar.showMessage("waiting for CAN device...")
         self.channels = None
         self.cBoxInterface.currentIndexChanged.connect(self.update_channels)
