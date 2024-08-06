@@ -59,10 +59,14 @@ class UI(QObject):
             QtWidgets.QPushButton, "connectButton"
         )
         self.path = os.path.dirname(__file__)
-        pixmap = QPixmap(os.path.join(self.path, "bitmap.png"))
-        icon = QIcon(pixmap)
-        self.connectButton.setIcon(icon)
-        self.connectButton.setStyleSheet("border:none;")
+        pixmapConnect = QPixmap(os.path.join(self.path, "connected.png"))
+        pixmapDisconnect = QPixmap(os.path.join(self.path, "disconnected.png"))
+        self.iconConnect = QIcon(pixmapConnect)
+        self.iconDisconnect = QIcon(pixmapDisconnect)
+        self.connectButton.setIcon(self.iconDisconnect)
+        self.connectButton.setStyleSheet("border:none; padding-top: 5px;")
+        self.connectButton.setCheckable(True)
+        self.connectButton.setChecked(False)
         self.startBtn: QtWidgets.QPushButton = self.window.findChild(
             QtWidgets.QPushButton, "startButton"
         )
@@ -96,6 +100,7 @@ class UI(QObject):
         self.connectButton.clicked.connect(self.onConnectClicked)
         self.startBtn.clicked.connect(self.onStartBtnClicked)
         self.statusBar.messageChanged.connect(self.onMessageChanged)
+        self.connectButton.toggled.connect(self.onConnectBtnToggled)
         self.initialization()
 
     def initialization(self):
@@ -122,6 +127,13 @@ class UI(QObject):
                 self.frameIDTable.setItem(
                     row, col, QtWidgets.QTableWidgetItem(str(frameIDList[row][col]))
                 )
+
+    @Slot(bool)
+    def onConnectBtnToggled(self, checked: bool):
+        if checked:
+            self.connectButton.setIcon(self.iconConnect)
+        else:
+            self.connectButton.setIcon(self.iconDisconnect)
 
     @Slot(int, int)
     def onConnectClicked(self):
