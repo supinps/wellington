@@ -133,6 +133,10 @@ class UI(QObject):
             for i in ModelIndexLists:
                 IndexSet.add(i.row())        
             self.filterChanged.emit([1])
+        else:
+            all_indices = self.frameIDTable.rowCount()
+            self.filterChanged.emit(list(range(all_indices)))
+
 
     def add_new_frame(self, frameID: str, frameData: str) -> None:
         self.model.appendData(frameID, frameData)
