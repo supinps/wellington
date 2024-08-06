@@ -3,7 +3,6 @@ import can
 import threading
 from .canson import CANson, ConfigSon
 from PySide6.QtCore import QThread, Signal
-import numpy as np
 import contextlib
 import sys
 import os
@@ -28,12 +27,13 @@ class CANFilter(QThread):
         self.canson = CANson()
         self.configson = ConfigSon()
         self.bus = None
-        self.filters = self.canson.get_filters()
+        self.all_filters = self.canson.get_filters()
         self.timeout = 0.5
         self._key_lock = threading.Lock()
         self.interfaces = self.configson.get_interfaces()
         self.channels = self.configson.get_channels()
-        self.index_list = np.arange(len(self.filters))
+        self.index_list = range(len(self.all_filters))
+        self.connected = False
         # self.initialization()
 
     def bus_init(self, interface_index, channel_index):
@@ -45,18 +45,23 @@ class CANFilter(QThread):
                         channel=self.channels[interface_index][channel_index],
                     )
                     self.set_filters()
+            self.connected = True
             self.Device.emit(True)
             # return "CAN device connected successfully"
         except (OSError, can.exceptions.CanInterfaceNotImplementedError):
             self.Device.emit(False)
+            self.connected = False
             # return "CAN device connection failed"
 
-    def set_filters(self, index_list=None):
-        if index_list == None:
-            index_list = self.index_list
+    def set_index_list(self, index_list):
+        self.index_list = index_list
+        if self.connected:
+            self.set_filters()
+
+    def set_filters(self):
         filter_list = []
-        for index in index_list:
-            filter_list.append(self.filters[index])
+        for index in self.index_list:
+            filter_list.append(self.all_filters[index])
         with self._key_lock:
             self.bus.set_filters(filter_list)
 

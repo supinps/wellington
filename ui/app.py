@@ -40,12 +40,16 @@ class ListModel(QAbstractTableModel):
         self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount())
         self._data.append([value1, value2])
         self.endInsertRows()
-    
+
     def saveFrames(self):
         df = pd.DataFrame(columns=self._column_names, data=self._data)
         td = dt.today()
         tt = td.time()
-        df.to_csv(f"frames_{td.year}{td.month}{td.day}_{tt.hour}{tt.minute}{tt.second}.csv", index=False)
+        df.to_csv(
+            f"frames_{td.year}{td.month}{td.day}_{tt.hour}{tt.minute}{tt.second}.csv",
+            index=False,
+        )
+
 
 class UI(QObject):
     busData = Signal(int, int)
@@ -115,7 +119,9 @@ class UI(QObject):
         self.initialization()
         self.saveButton.clicked.connect(self.model.saveFrames)
 
-        self.filterButton: QtWidgets.QPushButton = self.window.findChild(QtWidgets.QPushButton, "filterButton")
+        self.filterButton: QtWidgets.QPushButton = self.window.findChild(
+            QtWidgets.QPushButton, "filterButton"
+        )
         self.filterButton.clicked.connect(self.onApplyFilter)
 
     def initialization(self):
@@ -125,14 +131,14 @@ class UI(QObject):
     def start(self):
         self.window.show()
         self.app.exec()
-    
+
     def onApplyFilter(self):
         ModelIndexLists = self.frameIDTable.selectedIndexes()
         if len(ModelIndexLists) > 0:
             IndexSet = set()
             for i in ModelIndexLists:
-                IndexSet.add(i.row())        
-            self.filterChanged.emit([1])
+                IndexSet.add(i.row())
+            self.filterChanged.emit(list(IndexSet))
 
     def add_new_frame(self, frameID: str, frameData: str) -> None:
         self.model.appendData(frameID, frameData)
