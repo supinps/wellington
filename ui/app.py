@@ -110,6 +110,7 @@ class UI(QObject):
         )
         self.statusBar.showMessage("waiting for CAN device...")
         self.channels = None
+        self.try_connect = True
         self.cBoxInterface.currentIndexChanged.connect(self.update_channels)
         self.go_back_to_defauilt_msg = False
         self.connectButton.clicked.connect(self.onConnectClicked)
@@ -169,6 +170,7 @@ class UI(QObject):
 
     @Slot(int, int)
     def onConnectClicked(self):
+        self.try_connect = not self.try_connect
         self.busData.emit(
             self.cBoxInterface.currentIndex(), self.cBoxChannel.currentIndex()
         )
@@ -180,7 +182,8 @@ class UI(QObject):
     @Slot(bool)
     def handle_Device(self, enable: bool):
         self.startBtn.setEnabled(enable)
-        self.connectButton.setEnabled(not enable)
+        self.onConnectBtnToggled(enable)
+        # self.connectButton.setEnabled(not enable)
         if enable:
             self.go_back_to_defauilt_msg = False
             self.statusBar.showMessage("CAN device connected successfully")

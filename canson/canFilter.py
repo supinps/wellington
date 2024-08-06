@@ -28,7 +28,7 @@ class CANFilter(QThread):
         self.configson = ConfigSon()
         self.bus = None
         self.all_filters = self.canson.get_filters()
-        self.timeout = 0.5
+        self.timeout = 0.1
         self._key_lock = threading.Lock()
         self.interfaces = self.configson.get_interfaces()
         self.channels = self.configson.get_channels()
@@ -66,11 +66,8 @@ class CANFilter(QThread):
             self.bus.set_filters(filter_list)
 
     def run(self):
-        i = 0
         while True:
             self._key_lock.acquire()
-            print(i)
-            i += 1
             msg = self.bus.recv(timeout=self.timeout)
             self._key_lock.release()
             if msg != None:
@@ -78,6 +75,7 @@ class CANFilter(QThread):
                 name = self.canson.get_frame_name(frame)
                 data = self.canson.get_frame_data(frame, msg.data)
                 self.newData.emit(name, data)
+            time.sleep(0.4)
 
 
 def filter():
