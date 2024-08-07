@@ -1,22 +1,11 @@
-import time
 import can
 import threading
-from .canson import CANson, ConfigSon
+from canson import CANson, ConfigSon
 from PySide6.QtCore import QThread, Signal, QTimer
 import contextlib
-import sys
 import os
 
 __all__ = ["CANFilter"]
-
-interface = "socketcan"
-channel = "vcan0"
-
-filters = [
-    {"can_id": 451, "can_mask": 0x7FF, "extended": False},
-    {"can_id": 451, "can_mask": 0x1FFFFFFF, "extended": True},
-]
-
 
 class CANFilter(QThread):
     newData = Signal(str, str)
@@ -36,8 +25,6 @@ class CANFilter(QThread):
         self.channels = self.configson.get_channels()
         self.index_list = range(len(self.all_filters))
         self.connected = False
-        # self.timer = QTimer()
-        # self.initialization()
 
     def bus_init(self, interface_index, channel_index):
         try:
@@ -51,11 +38,9 @@ class CANFilter(QThread):
             self.connected = True
             self.Device.emit(True)
             self.start()
-            # return "CAN device connected successfully"
         except (OSError, can.exceptions.CanInterfaceNotImplementedError):
             self.Device.emit(False)
             self.connected = False
-            # return "CAN device connection failed"
 
     def set_index_list(self, index_list):
         self.index_list = index_list
@@ -96,29 +81,7 @@ class CANFilter(QThread):
         self.timer.timeout.connect(self.on_timeout)
         self.stopTimer.connect(self.timer.stop)
         self.start_timer.connect(self.timer.start)
-        # self.timer.start(500)
         self.exec()
 
-
-def filter():
-    fc = CANFilter(channel, interface)
-    fc.set_filters(filters)
-    fc.recv()
-
-
-def gui():
-    global filters_changed, filters
-    time.sleep(10)
-    filters = [
-        {"can_id": 452, "can_mask": 0x7FF, "extended": False},
-        {"can_id": 452, "can_mask": 0x1FFFFFFF, "extended": True},
-    ]
-    filters_changed = True
-    print("changing filters....")
-
-
 if __name__ == "__main__":
-    filter_thread = threading.Thread(target=filter)
-    gui_thread = threading.Thread(target=gui)
-    filter_thread.start()
-    gui_thread.start()
+    print("CANFilter is a package")
