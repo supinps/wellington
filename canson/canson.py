@@ -1,18 +1,14 @@
 import json
-import sys
 import os
 
 
 __all__ = ["CANson", "ConfigSon"]
-canson_dir = os.path.dirname(__file__)
-# Construct the full path to the JSON file
-json_path = os.path.join(canson_dir, "canson.json")
-
 
 class CANson:
-    def __init__(self, config_file=json_path) -> None:
-        self.config_file = config_file
-        self.frame_desc = json.load(open(self.config_file))
+    def __init__(self) -> None:
+        self.canson_dir = os.path.dirname(__file__)
+        self.config_file_path = os.path.join(self.canson_dir, "canson.json")
+        self.frame_desc = json.load(open(self.config_file_path))
         self.mask_dict = {True: 0x1FFFFFFF, False: 0x7FF}
         self.valid_frame_id_dict = {True: 2**29, False: 2**11}
         self.valid_frame_list = self.__get_valid_frames()
@@ -68,10 +64,8 @@ class CANson:
         frame_type = self.get_frame_type(frame)
 
         match frame_type:
-
             case "int":
                 frame_data = str(int.from_bytes(data, "little"))
-
             case "enum":
                 key = str(int.from_bytes(data, "little"))
                 enum_dict = frame["categories"]
@@ -80,10 +74,8 @@ class CANson:
                 else:
                     frame_data = None
                     print("enum out of range")
-
             case "intlist":
                 frame_data = str(list(data))
-
             case _:
                 frame_data = None
 
@@ -114,7 +106,8 @@ class CANson:
 
 class ConfigSon:
     def __init__(self) -> None:
-        self.json_path = os.path.join(canson_dir, "config.json")
+        self.canson_dir = os.path.dirname(__file__)
+        self.json_path = os.path.join(self.canson_dir, "config.json")
         self.file = json.load(open(self.json_path))
         self.validItems = self.get_valid_items()
 
@@ -160,14 +153,6 @@ class ConfigSon:
 if __name__ == "__main__":
     cs = CANson()
     print(cs.get_gui_frame_details())
-    # data = 2
-    # frame = cs.get_frame(0x101)
-    # print(cs.get_frame_name(frame))
-    # print(cs.get_frame_data(frame, data.to_bytes(4, "little")))
-    # print(cs.get_frame_type(frame))
-    # print(cs.get_filters())
-    # print(cs.valid_frame_list)
-
     cs = ConfigSon()
     print(cs.file)
     print(cs.validItems)
