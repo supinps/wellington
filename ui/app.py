@@ -1,6 +1,6 @@
 import sys
 import os
-from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6 import QtWidgets
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QAbstractTableModel, Qt, QModelIndex, QObject, Slot, Signal
 from PySide6.QtGui import QIcon, QPixmap
@@ -21,14 +21,14 @@ class ListModel(QAbstractTableModel):
         return len(self._data)
 
     def columnCount(self, parent=QModelIndex()):
-        return 2  # Two columns
+        return 2
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
             if orientation == Qt.Horizontal:
-                return self._column_names[section]  # Return the column name
+                return self._column_names[section]
             if orientation == Qt.Vertical:
-                return str(section + 1)  # Return the row number
+                return str(section + 1)
 
     def data(self, index, role=Qt.DisplayRole):
         if role == Qt.DisplayRole:
@@ -64,6 +64,7 @@ class UI(QObject):
         self.app = QtWidgets.QApplication(sys.argv)
         apply_stylesheet(self.app, theme="light_blue.xml")
         self.window: QtWidgets.QMainWindow = self.loader.load("ui/app.ui", None)
+        self.window.setWindowTitle("CAN Bus Visualizer")
         self.cBoxInterface: QtWidgets.QComboBox = self.window.findChild(
             QtWidgets.QComboBox, "cBoxInterface"
         )
@@ -95,9 +96,7 @@ class UI(QObject):
             QtWidgets.QTableView, "frameDataTableView"
         )
         self.frameDataTableView.setColumnWidth(50, 250)
-        self.model = ListModel(
-            [["0x502", "Item 1b"], ["0x503", "Item 2b"], ["0x502", "Item 3b"]]
-        )
+        self.model = ListModel()
         self.frameDataTableView.setModel(self.model)
         self.statusBar: QtWidgets.QStatusBar = self.window.findChild(
             QtWidgets.QStatusBar, "statusbar"
@@ -112,6 +111,8 @@ class UI(QObject):
             "QTableWidget::item:selected{background-color: none;}"
         )
         self.statusBar.showMessage("waiting for CAN device...")
+        self.statusLabel: QtWidgets.QLabel = QtWidgets.QLabel()
+        self.statusBar.addPermanentWidget(self.statusLabel)
         self.channels = None
         self.connected = False
         self.startBtn_state_is_start = True
@@ -120,7 +121,6 @@ class UI(QObject):
         self.connectButton.clicked.connect(self.onConnectClicked)
         self.startBtn.clicked.connect(self.onStartBtnClicked)
         self.statusBar.messageChanged.connect(self.onMessageChanged)
-        # self.connectButton.toggled.connect(self.onConnectBtnToggled)
         self.initialization()
         self.saveButton.clicked.connect(self.model.saveFrames)
 
@@ -130,8 +130,12 @@ class UI(QObject):
         self.filterButton.clicked.connect(self.onApplyFilter)
 
     def initialization(self):
+        self.setStatus("Disconnected")
         self.startBtn.setEnabled(False)
         self.connectButton.setEnabled(True)
+    
+    def setStatus(self, text: str):
+        self.statusLabel.setText(text)
 
     def start(self):
         self.window.show()
@@ -164,13 +168,6 @@ class UI(QObject):
                 self.frameIDTable.setItem(
                     row, col, QtWidgets.QTableWidgetItem(str(frameIDList[row][col]))
                 )
-
-    @Slot(bool)
-    def onConnectBtnToggled(self, checked: bool):
-        if checked:
-            self.connectButton.setIcon(self.iconConnect)
-        else:
-            self.connectButton.setIcon(self.iconDisconnect)
 
     @Slot(int, int)
     def onConnectClicked(self):
@@ -206,18 +203,18 @@ class UI(QObject):
     @Slot(bool)
     def handle_Device(self, enable: bool):
         self.startBtn.setEnabled(enable)
-        # self.onConnectBtnToggled(enable)
         self.connectButton.clicked.connect(self.onConnectClicked)
         self.connected = enable
-        # self.connectButton.setEnabled(not enable)
         if enable:
             self.connectButton.setIcon(self.iconConnect)
             self.go_back_to_defauilt_msg = False
-            self.statusBar.showMessage("CAN device connected successfully")
+            self.statusBar.showMessage("CAN device connected successfully", timeout=5000)
+            self.setStatus("Connected")
         else:
             self.connectButton.setIcon(self.iconDisconnect)
             self.statusBar.showMessage("CAN device connection failed", timeout=5000)
             self.go_back_to_defauilt_msg = True
+            self.setStatus("Disconnected")
 
     @Slot()
     def onMessageChanged(self):
@@ -236,8 +233,7 @@ class UI(QObject):
     def get_channel_list(self, channel_list: list[str]):
         self.channels = channel_list
 
-
 if __name__ == "__main__":
+    print("Test Code")
     ui = UI()
     ui.start()
-    ui.add_new_frame("0x403", "22.3")
