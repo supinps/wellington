@@ -15,13 +15,15 @@ class CANVisualizer:
         self.can_filter.Device.connect(self.ui.handle_Device)
         # self.can_filter.initialization()
         # self.ui.enable_start_button(False)
-        self.ui.startBtn.clicked.connect(self.can_filter.start)
+        self.ui.startBus.connect(self.can_filter.startBus)
+        self.ui.stopBus.connect(self.can_filter.stopBus)
         self.ui.populateFrameNames(self.can_filter.canson.get_gui_frame_details())
         self.ui.add_interfaces(self.can_filter.configson.get_interfaces())
         self.ui.get_channel_list(self.can_filter.configson.get_channels_gui())
         self.ui.filterChanged.connect(self.can_filter.set_index_list)
         self.ui.update_channels()
         self.ui.busData.connect(self.can_filter.bus_init)
+        self.ui.DisConnect.connect(self.can_filter.quit)
         # self.can_filter.start()
 
 

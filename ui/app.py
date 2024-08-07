@@ -54,6 +54,9 @@ class ListModel(QAbstractTableModel):
 class UI(QObject):
     busData = Signal(int, int)
     filterChanged = Signal(list)
+    DisConnect = Signal()
+    startBus = Signal()
+    stopBus = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -110,13 +113,14 @@ class UI(QObject):
         )
         self.statusBar.showMessage("waiting for CAN device...")
         self.channels = None
-        self.try_connect = True
+        self.connected = False
+        self.startBtn_state_is_start = True
         self.cBoxInterface.currentIndexChanged.connect(self.update_channels)
         self.go_back_to_defauilt_msg = False
         self.connectButton.clicked.connect(self.onConnectClicked)
         self.startBtn.clicked.connect(self.onStartBtnClicked)
         self.statusBar.messageChanged.connect(self.onMessageChanged)
-        self.connectButton.toggled.connect(self.onConnectBtnToggled)
+        # self.connectButton.toggled.connect(self.onConnectBtnToggled)
         self.initialization()
         self.saveButton.clicked.connect(self.model.saveFrames)
 
@@ -170,24 +174,48 @@ class UI(QObject):
 
     @Slot(int, int)
     def onConnectClicked(self):
-        self.try_connect = not self.try_connect
-        self.busData.emit(
-            self.cBoxInterface.currentIndex(), self.cBoxChannel.currentIndex()
-        )
+        self.connectButton.clicked.disconnect(self.onConnectClicked)
+        if not self.connected:
+            self.busData.emit(
+                self.cBoxInterface.currentIndex(), self.cBoxChannel.currentIndex()
+            )
+        else:
+            self.DisConnect.emit()
+            if not self.startBtn_state_is_start:
+                self.startBtn.clicked.disconnect(self.onStopBtnClicked)
+                self.startBtn.clicked.connect(self.onStartBtnClicked)
+                self.startBtn.setText("Start")
+            self.handle_Device(False)
 
     @Slot()
     def onStartBtnClicked(self):
+        self.startBtn.clicked.disconnect(self.onStartBtnClicked)
+        self.startBtn.clicked.connect(self.onStopBtnClicked)
         self.startBtn.setText("Stop")
+        self.startBtn_state_is_start = False
+        self.startBus.emit()
+
+    @Slot()
+    def onStopBtnClicked(self):
+        self.startBtn.clicked.disconnect(self.onStopBtnClicked)
+        self.startBtn.clicked.connect(self.onStartBtnClicked)
+        self.startBtn.setText("Start")
+        self.startBtn_state_is_start = True
+        self.stopBus.emit()
 
     @Slot(bool)
     def handle_Device(self, enable: bool):
         self.startBtn.setEnabled(enable)
-        self.onConnectBtnToggled(enable)
+        # self.onConnectBtnToggled(enable)
+        self.connectButton.clicked.connect(self.onConnectClicked)
+        self.connected = enable
         # self.connectButton.setEnabled(not enable)
         if enable:
+            self.connectButton.setIcon(self.iconConnect)
             self.go_back_to_defauilt_msg = False
             self.statusBar.showMessage("CAN device connected successfully")
         else:
+            self.connectButton.setIcon(self.iconDisconnect)
             self.statusBar.showMessage("CAN device connection failed", timeout=5000)
             self.go_back_to_defauilt_msg = True
 
