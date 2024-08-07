@@ -2,7 +2,7 @@ import time
 import can
 import threading
 from .canson import CANson, ConfigSon
-from PySide6.QtCore import QThread, Signal
+from PySide6.QtCore import QThread, Signal, QTimer
 import contextlib
 import sys
 import os
@@ -21,6 +21,8 @@ filters = [
 class CANFilter(QThread):
     newData = Signal(str, str)
     Device = Signal(bool)
+    stopTimer = Signal()
+    start_timer = Signal(int)
 
     def __init__(self) -> None:
         super().__init__()
@@ -34,6 +36,7 @@ class CANFilter(QThread):
         self.channels = self.configson.get_channels()
         self.index_list = range(len(self.all_filters))
         self.connected = False
+        # self.timer = QTimer()
         # self.initialization()
 
     def bus_init(self, interface_index, channel_index):
@@ -47,6 +50,7 @@ class CANFilter(QThread):
                     self.set_filters()
             self.connected = True
             self.Device.emit(True)
+            self.start()
             # return "CAN device connected successfully"
         except (OSError, can.exceptions.CanInterfaceNotImplementedError):
             self.Device.emit(False)
@@ -65,17 +69,35 @@ class CANFilter(QThread):
         with self._key_lock:
             self.bus.set_filters(filter_list)
 
+    def on_timeout(self):
+        self._key_lock.acquire()
+        msg = self.bus.recv(timeout=self.timeout)
+        self._key_lock.release()
+        if msg != None:
+            frame = self.canson.get_frame(msg.arbitration_id)
+            name = self.canson.get_frame_name(frame)
+            data = self.canson.get_frame_data(frame, msg.data)
+            self.newData.emit(name, data)
+
+    def quit(self) -> None:
+        self.stopTimer.emit()
+        with self._key_lock:
+            self.bus.shutdown()
+        return super().quit()
+
+    def stopBus(self):
+        self.stopTimer.emit()
+
+    def startBus(self):
+        self.start_timer.emit(500)
+
     def run(self):
-        while True:
-            self._key_lock.acquire()
-            msg = self.bus.recv(timeout=self.timeout)
-            self._key_lock.release()
-            if msg != None:
-                frame = self.canson.get_frame(msg.arbitration_id)
-                name = self.canson.get_frame_name(frame)
-                data = self.canson.get_frame_data(frame, msg.data)
-                self.newData.emit(name, data)
-            time.sleep(0.4)
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.on_timeout)
+        self.stopTimer.connect(self.timer.stop)
+        self.start_timer.connect(self.timer.start)
+        # self.timer.start(500)
+        self.exec()
 
 
 def filter():
