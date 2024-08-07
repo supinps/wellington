@@ -1,0 +1,161 @@
+[
+    {
+        "name": "temperature",
+        "id": "100",
+        "type": "int",
+        "extended": true
+    },
+    {
+        "name": "humidity",
+        "id": "0x101",
+        "type": "enum",
+        "categories": {
+            "0": "good",
+            "1": "bad",
+            "2": "average"
+        }
+    },
+    {
+        "name": "wind",
+        "id": "0x102",
+        "type": "intlist"
+    },
+    {
+        "name": "rain",
+        "id": "103",
+        "type": "enum",
+        "categories": {
+            "0": "yes",
+            "1": "no"
+        }
+    },
+    {
+        "name": "temperature",
+        "id": "100",
+        "type": "int",
+        "extended": true
+    },
+    {
+        "name": "humidity",
+        "id": "0x101",
+        "type": "enum",
+        "categories": {
+            "0": "good",
+            "1": "bad",
+            "2": "average"
+        }
+    },
+    {
+        "name": "wind",
+        "id": "0x102",
+        "type": "intlist"
+    },
+    {
+        "name": "rain",
+        "id": "103",
+        "type": "enum",
+        "categories": {
+            "0": "yes",
+            "1": "no"
+        }
+    },
+    {
+        "name": "temperature",
+        "id": "100",
+        "type": "int",
+        "extended": true
+    },
+    {
+        "name": "humidity",
+        "id": "0x101",
+        "type": "enum",
+        "categories": {
+            "0": "good",
+            "1": "bad",
+            "2": "average"
+        }
+    },
+    {
+        "name": "wind",
+        "id": "0x102",
+        "type": "intlist"
+    },
+    {
+        "name": "rain",
+        "id": "103",
+        "type": "enum",
+        "categories": {
+            "0": "yes",
+            "1": "no"
+        }
+    },
+    {
+        "name": "temperature",
+        "id": "100",
+        "type": "int",
+        "extended": true
+    },
+    {
+        "name": "humidity",
+        "id": "0x101",
+        "type": "enum",
+        "categories": {
+            "0": "good",
+            "1": "bad",
+            "2": "average"
+        }
+    },
+    {
+        "name": "wind",
+        "id": "0x102",
+        "type": "intlist"
+    },
+    {
+        "name": "rain",
+        "id": "103",
+        "type": "enum",
+        "categories": {
+            "0": "yes",
+            "1": "no"
+        }
+    },
+    {
+        "name": "temperature",
+        "id": "100",
+        "type": "int",
+        "extended": true
+    },
+    {
+        "name": "humidity",
+        "id": "0x101",
+        "type": "enum",
+        "categories": {
+            "0": "good",
+            "1": "bad",
+            "2": "average"
+        }
+    },
+    {
+        "name": "wind",
+        "id": "0x102",
+        "type": "intlist"
+    },
+    {
+        "name": "rain",
+        "id": "103",
+        "type": "enum",
+        "categories": {
+            "0": "yes",
+            "1": "no"
+        }
+    },
+    {
+        "name": "END",
+        "id": "103",
+        "type": "enum",
+        "categories": {
+            "0": "yes",
+            "1": "no"
+        }
+    }
+]
